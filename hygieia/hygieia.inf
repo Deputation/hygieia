@@ -1,0 +1,77 @@
+;
+; hygieia.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=hygieia.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+hygieia_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+hygieia.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%hygieia.DeviceDesc%=hygieia_Device, Root\hygieia ; TODO: edit hw-id
+
+[hygieia_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+hygieia.sys
+
+;-------------- Service installation
+[hygieia_Device.NT.Services]
+AddService = hygieia,%SPSVCINST_ASSOCSERVICE%, hygieia_Service_Inst
+
+; -------------- hygieia driver install sections
+[hygieia_Service_Inst]
+DisplayName    = %hygieia.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\hygieia.sys
+
+;
+;--- hygieia_Device Coinstaller installation ------
+;
+
+[hygieia_Device.NT.CoInstallers]
+AddReg=hygieia_Device_CoInstaller_AddReg
+CopyFiles=hygieia_Device_CoInstaller_CopyFiles
+
+[hygieia_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[hygieia_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[hygieia_Device.NT.Wdf]
+KmdfService =  hygieia, hygieia_wdfsect
+[hygieia_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "hygieia Installation Disk"
+hygieia.DeviceDesc = "hygieia Device"
+hygieia.SVCDESC = "hygieia Service"
